@@ -1,52 +1,71 @@
-
-# Use o programa paint.net (baixar da internet) para gerar o arquivo .bmp de imagem 320x240 e 24 bits/pixel 
-# para então usar o programa bmp2isc.exe para gerar o arquivo .data correspondente para colocar no include
-# ou bmp2oax2 para gerar o .mif, .bin e .data
-
-# Abra duas janelas do Bitmap, uma com frame 0 e outra com a frame 1
-
 .data
-.include "tela1.data"
-
-
+.include "Assets/Sprites/predio.data"
+.include "Assets/Sprites/felixParado.data"
 
 .text
+SETUP:		
+		la s0,predio
+		li s1,52
+		li s2,24
+		li s3,0
+		jal PRINT
 
-# Preenche a tela de vermelho
-	li t1,0xFF000000	# endereco inicial da Memoria VGA - Frame 0
-	li t2,0xFF012C00	# endereco final 
-	li t3,0x07070707	# cor vermelho|vermelho|vermelhor|vermelho
-LOOP: 	beq t1,t2,FORA		# Se for o último endereço então sai do loop
-	sw t3,0(t1)		# escreve a word na memória VGA
-	addi t1,t1,4		# soma 4 ao endereço
-	j LOOP			# volta a verificar
+		la s0,felixParado
+		li s1,0
+		li s2,0
+		li s3,0
+		jal PRINT
 
+GAME_LOOP:
 
-# Carrega a imagem1
-FORA:	li t1,0xFF000000	# endereco inicial da Memoria VGA - Frame 0
-	li t2,0xFF012C00	# endereco final 
-	la s1,tela1		# endereço dos dados da tela na memoria
-	addi s1,s1,8		# primeiro pixels depois das informações de nlin ncol
-LOOP1: 	beq t1,t2,FORA1		# Se for o último endereço então sai do loop
-	lw t3,0(s1)		# le um conjunto de 4 pixels : word
-	sw t3,0(t1)		# escreve a word na memória VGA
-	addi t1,t1,4		# soma 4 ao endereço
-	addi s1,s1,4
-	j LOOP1			# volta a verificar
-
-
-# Carrega a imagem2
-FORA1:	li t1,0xFF100000	# endereco inicial da Memoria VGA - Frame 1
-	li t2,0xFF112C00	# endereco final 
-	la s1,tela1		# endereço dos dados da tela na memoria
-	addi s1,s1,8		# primeiro pixels depois das informações de nlin ncol
-LOOP2: 	beq t1,t2,FIM		# Se for o último endereço então sai do loop
-	lw t3,0(s1)		# le um conjunto de 4 pixels : word
-	sw t3,0(t1)		# escreve a word na memória VGA
-	addi t1,t1,4		# soma 4 ao endereço
-	addi s1,s1,4
-	j LOOP2			# volta a verificar
-	
-# devolve o controle ao sistema operacional
-FIM:	li a7,10		# syscall de exit
-	ecall
+#
+#	s0 = endereço imagem
+#	s1 = x
+#	s2 = y
+#	s3 = frame (0 ou 1)
+#
+##
+#
+#	t0 = endereço do bitmap display
+#	t1 = endereço imagem (pulando para a parte dos pixel)
+#	t2 = contador linha
+#	t3 = contador coluna
+#	t4 = largura
+#	t5 = altura
+PRINT:		li t0, 0xFF0	#Inicio do endereço do bitmap display
+		add t0,t0,s3	#0xFF0 ou 0xFF1 dependendo do frame s3
+		slli t0,t0,20	#Preenche o restante do endereço com zeros (0xFF000000 ou 0xFF100000)
+		
+		add t0,t0,s1	#Coordenada x da imagem
+		
+		li t1,320	#Largura da tela
+		mul t1,t1,s2	#Largura da tela * y
+		add t0,t0,t1	#Endereço no bitmap dislay (x + y * largura da tela)
+		
+		addi t1,s0,8	#Endereço imagem (Pula os 2 bytes no inicio da imagem)
+		
+		mv t2,zero	#Zera os contadores de linha
+		mv t3,zero
+		
+		lw t4,0(s0)	#Recebe a largura especificada no arquivo (primeiro byte)
+		lw t5,4(s0)	#Receba a altura especificada no arquivo (segundo byte)
+		
+PRINT_LINHA:	lw t6,0(t1)	#Pega 4 bytes (word) do arquivo da imagem
+		sw t6,0(t0)	#Salva 4 bytes (word) no endereço da bitmap display
+		
+		addi t0,t0,4	#Pula pros proximos 4 bytes da imagem
+		addi t1,t1,4	#Pula pros proximos 4 bytes do display
+		
+		
+		addi t3,t3,4	#Soma 4 ao contador de coluna
+		blt t3,t4,PRINT_LINHA	#Se for menor que a largura da imagem, volta pro loop
+		
+		addi t0,t0,320	#Se não, pula para a proxima linha no bitmap display (soma 320 e subtrai a largura dele)
+		sub t0,t0,t4	
+		
+		mv t3,zero	#Zera o contador de coluna
+		addi t2,t2,1	#Soma 1 ao contador de linha
+		bgt t5,t2,PRINT_LINHA	#Se a altura da imagem for maior que o contador de linha, volta pro loop
+		
+		ret		#return
+		
