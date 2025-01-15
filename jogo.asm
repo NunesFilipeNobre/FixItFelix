@@ -1,23 +1,99 @@
 .data
 .include "Assets/Sprites/predio.data"
 .include "Assets/Sprites/felixParado.data"
+CHAR_POS:	.half 0,0			#Posição do personagem
+OLD_CHAR_POS:	.half 0,0			#Posição antiga do personagem (no ultimo frame)
 
 .text
 SETUP:		
-		la s0,predio
-		li s1,52
-		li s2,24
-		li s3,0
-		jal PRINT
+		la s0,predio			#Carrega endereço .data do predio
+		li s1,52			#Posição x = 52
+		li s2,24			#Posição y = 24
+		li s3,0				#Frame 0
+		jal PRINT			#Função print
 
-		la s0,felixParado
-		li s1,0
-		li s2,0
-		li s3,0
-		jal PRINT
+GAME_LOOP:	jal KEY2			#Função KEY2
+		
+		xori s4,s4,1			#Troca 0 por 1 e 1 por 0
 
-GAME_LOOP:
+		la t0,CHAR_POS			#Carrega posição do perosnagem CHAR_POS em t0
 
+		la s0,felixParado		#Carrega edereço do .data do felix parado
+		lh s1,0(t0)			#Posição x = primeiro half do CHAR_POS
+		lh s2,2(t0)			#Posição y = segundo half do CHAR_POS
+		mv s3,s4			#Frame = s4 (Fica trocando entre frame 0 e 1 por causa do xor acima)
+		jal PRINT			#Função print
+		
+		li t0,0xFF200604		#Endereço do frame a ser mostrado no bitmap display
+		sw s4,0(t0)			#Salva 1 ou 0 no frame
+
+		la s0,predio			#Carrega endereço .data do predio
+		li s1,52			#Posição x = 52
+		li s2,24			#Posição y = 24
+		xori s3,s3,1			#Usa o frame oposto
+		jal PRINT			#Função print
+		
+		j GAME_LOOP			#Volta pro inicio loop
+		
+KEY2:		li t1,0xFF200000		# carrega o endereço de controle do KDMMIO
+		lw t0,0(t1)			# Le bit de Controle Teclado
+		andi t0,t0,0x0001		# mascara o bit menos significativo
+   		beq t0,zero,FIM   	   	# Se não há tecla pressionada então vai para FIM
+  		lw t2,4(t1)  			# le o valor da tecla tecla
+  	
+  		li t0,'a'			
+  		beq t2,t0,CHAR_ESQ		#Se 'a' for pressionado vai apra CHAR_ESQ
+  		
+  		li t0,'d'
+  		beq t2,t0,CHAR_DIR		#Se 'd' for pressionado vai apra CHAR_DIR
+  		
+  		li t0,'w'
+  		beq t2,t0,CHAR_CIMA		#Se 'w' for pressionado vai apra CHAR_CIMA
+  		
+  		li t0,'s'
+  		beq t2,t0,CHAR_BAIXO		#Se 's' for pressionado vai apra CHAR_BAIXO
+  	
+FIM:		ret  				#retorna
+ 
+CHAR_ESQ:	la t0,CHAR_POS			#Carrega endereço da posição do personagem
+ 		la t1,OLD_CHAR_POS		#Carrega endereço da posição antiga do personagem
+ 		lw t2,0(t0)			#Carrega os 2 half words da posição atual
+ 		sw t2,0(t1)			#Coloca os 2 na nova posição antiga
+ 		
+ 		lh t1,0(t0)			#Carrega o primeiro half word (x) da posição do personagem atual
+ 		addi t1,t1,-4			#Diminui ele em 4
+ 		sh t1,0(t0)			#Atualiza a posição do personagem
+ 		ret				#Retorna
+ 		
+CHAR_DIR:	la t0,CHAR_POS
+ 		la t1,OLD_CHAR_POS
+ 		lw t2,0(t0)
+ 		sw t2,0(t1)
+ 		
+ 		lh t1,0(t0)
+ 		addi t1,t1,4
+ 		sh t1,0(t0)
+ 		ret
+ 		
+CHAR_CIMA:	la t0,CHAR_POS
+ 		la t1,OLD_CHAR_POS
+ 		lw t2,0(t0)
+ 		sw t2,0(t1)
+ 		
+ 		lh t1,2(t0)
+ 		addi t1,t1,-4
+ 		sh t1,2(t0)
+ 		ret
+ 		
+CHAR_BAIXO:	la t0,CHAR_POS
+ 		la t1,OLD_CHAR_POS
+ 		lw t2,0(t0)
+ 		sw t2,0(t1)
+ 		
+ 		lh t1,2(t0)
+ 		addi t1,t1,4
+ 		sh t1,2(t0)
+ 		ret
 #
 #	s0 = endereço imagem
 #	s1 = x
