@@ -50,7 +50,7 @@ KEY2:		li t1,0xFF200000		# carrega o endereço de controle do KDMMIO
   		beq t2,t0,CHAR_ESQ		#Se 'a' for pressionado vai apra CHAR_ESQ
   		
   		li t0,'d'
-  		beq t2,t0,CHAR_DIR		#Se 'd' for pressionado vai apra CHAR_DIR
+  		beq t2,t0,CHAR_DIR		#Se 'd' for pr	essionado vai apra CHAR_DIR
   		
   		li t0,'w'
   		beq t2,t0,CHAR_CIMA		#Se 'w' for pressionado vai apra CHAR_CIMA
