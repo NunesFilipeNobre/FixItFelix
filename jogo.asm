@@ -2,18 +2,51 @@
 .include "Assets/Sprites/amogus.data"
 .include "Assets/Sprites/chao.data"
 .include "Assets/Sprites/mapa.data"
-CHAR_POS:	.half 0,0			#Posição do personagem
-OLD_CHAR_POS:	.half 0,0			#Posição antiga do personagem (no ultimo frame)
+.include "Assets/Sprites/mesa.data"
+CHAR_POS:	.half 144,200			#Posição do personagem
+OLD_CHAR_POS:	.half 144,200			#Posição antiga do personagem (no ultimo frame)
 
 .text
 SETUP:		
 		la s0,mapa			#Carrega endereço .data do mapa
-		li s1,0				#Posição x = 0
-		li s2,0				#Posição y = 0
+		li s1,48				#Posição x = 0
+		li s2,8				#Posição y = 0
 		li s3,0				#Frame 0
 		jal PRINT			#Função print
 		li s3,1				#Frame 1
 		jal PRINT			#Mapa gerado nos 2 frames
+		
+		la s0,mesa			#espaco de 19 + mesa de 32
+		li s1,48			#4 mesas, 5 espacos e 1 pixel sobrando
+		li s2,104
+		li s3,0				
+		jal PRINT			
+		li s3,1	
+		jal PRINT
+		li a1,3
+		li a0,0
+LOOP:						
+		addi s1,s1,64
+		addi a0,a0,1
+		li s3,0				
+		jal PRINT			
+		li s3,1	
+		jal PRINT
+		blt a0,a1,LOOP
+	ELSE:
+		li a0,0
+		addi a2,a2,1
+		li a3,1
+		addi s2,s2,64
+		li s1,48
+		beq a2,a3,LOOP
+		li s1,48
+		li s2,168
+		li s3,0				
+		jal PRINT			
+		li s3,1	
+		jal PRINT
+		
 
 GAME_LOOP:	jal KEY2			#Função KEY2
 		
