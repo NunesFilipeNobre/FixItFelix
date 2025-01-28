@@ -98,8 +98,12 @@ CHAR_ESQ:	la t0,CHAR_POS			#Carrega endereço da posição do personagem
  		lw t2,0(t0)			#Carrega os 2 half words da posição atual
  		sw t2,0(t1)			#Coloca os 2 na nova posição antiga
  		
+ 						#inserir if que checa se o personagem esta nas bordas aqui
+ 						#se nao, executar comandos abaixo
+ 						#se sim, retornar
+ 		
  		lh t1,0(t0)			#Carrega o primeiro half word (x) da posição do personagem atual
- 		addi t1,t1,-32			#Diminui ele em 4
+ 		addi t1,t1,-32			#Diminui ele em 32
  		sh t1,0(t0)			#Atualiza a posição do personagem
  		ret				#Retorna
  		
@@ -118,6 +122,12 @@ CHAR_CIMA:	la t0,CHAR_POS
  		lw t2,0(t0)
  		sw t2,0(t1)
  		
+ 		li t1,32
+ 		lh t2,2(t0)			
+ 		bgt t2,t1,ELSE_CIMA		
+ 		ret				
+ 		
+	ELSE_CIMA:
  		lh t1,2(t0)
  		addi t1,t1,-32
  		sh t1,2(t0)
