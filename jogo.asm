@@ -73,28 +73,62 @@ GAME_LOOP:	jal KEY2			#Função KEY2
 		li t0,0xFF200604		#Endereço do frame a ser mostrado no bitmap display
 		sw s4,0(t0)			#Salva 1 ou 0 no frame (troca pra esse frame)
 		
-		la t0,OLD_CHAR_POS		#Carrega posição antiga do perosnagem OLD_CHAR_POS em t0
+		
 
-	CHECA_MESA:
-		la s0,chao			#Carrega endereço .data do chao
-		li t2,104
-		lh t3,2(t0)
-		beq t3,t2,CHECA_COLUNAS
+	CHECA_MESA:				#Checa se o jogador esta em cima de uma mesa
+		la t0,OLD_CHAR_POS		#Carrega posição antiga do perosnagem OLD_CHAR_POS em t0
+		la t1,MESAS
+		li t2,104			#Coordenada y da primeira mesa
+		lh t3,2(t0)			#Carrega coordenada y do OLD_CHAR_POS
+		beq t3,t2,CHECA_COLUNAS		#Checa se a coordenada y coincide com uma linha de mesas
 		addi t2,t2,64
-	  	bne t3,t2,PRINTA_SOMBRA
-		CHECA_COLUNAS:
-			li t2,48
-			lh t3,0(t0)
+	  	bne t3,t2,PRINTA_CHAO		#Se nao, printa o chao
+		CHECA_COLUNAS:			#Se sim, checa se a coordenada x tambem coincide
+			li t2,48		#Coordenada x da primeira mesa
+			lh t3,0(t0)		#Carrega coordenada x do OLD_CHAR_POS
+			lb t6,0(t1)
+			bne t6,zero,ELSE_VER
+			la s0,mesa
 			beq t2,t3,PRINTA_MESA
+			ELSE_VER:
+			la s0,vermelho
+			beq t2,t3,PRINTA_MESA	#Checa se coordenadas coincidem em qualquer mesa
+			
 			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)
+			bne t6,zero,ELSE_GAR
+			la s0,mesa
 			beq t2,t3,PRINTA_MESA
-			addi t2,t2,64
+			ELSE_GAR:
+			la s0,mesagarrafa
 			beq t2,t3,PRINTA_MESA
+			
 			addi t2,t2,64
-			bne t2,t3,PRINTA_SOMBRA
-			PRINTA_MESA:
-				la s0,mesa
-	  PRINTA_SOMBRA:
+			addi t1,t1,1
+			lb t6,0(t1)
+			bne t6,zero,ELSE_LAT
+			la s0,mesa
+			beq t2,t3,PRINTA_MESA
+			ELSE_LAT:
+			la s0,mesalata
+			beq t2,t3,PRINTA_MESA
+			
+			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)		#Pega quarto byte de MESA
+			bne t6,zero,ELSE_AMA	#Se o quarto byte for igual a 0
+			la s0,mesa
+			beq t2,t3,PRINTA_MESA
+			ELSE_AMA:
+			la s0,amarelo
+			bne t2,t3,PRINTA_CHAO	#Se nao, printa o chao
+			PRINTA_MESA:		#Se sim, uma mesa sera printada por baixo
+				j PRINTA_TRAS
+				
+	  PRINTA_CHAO:
+	  	la s0,chao			#Carrega endereço .data do chao
+	  PRINTA_TRAS:				#Printa o fundo atras do jogador
 		lh s1,0(t0)			#Posição x = primeiro half do OLD_CHAR_POS
 		lh s2,2(t0)			#Posição y = segundo half do OLD_CHAR_POS
 		xori s3,s3,1			#Usa o frame oposto
@@ -189,7 +223,70 @@ CHAR_BAIXO:	la t0,CHAR_POS
  		sh t1,2(t0)
  		ret
 
-CHAR_ESP:	
+CHAR_ESP:
+		la t0,CHAR_POS		#Carrega posição antiga do perosnagem CHAR_POS em t0
+		la t1,MESAS
+		li t2,104			#Coordenada y da primeira mesa
+		lh t3,2(t0)			#Carrega coordenada y do CHAR_POS
+		beq t3,t2,CHECA_COLUNAS1	#Checa se a coordenada y coincide com uma linha de mesas
+		addi t2,t2,64
+	  	beq t3,t2,CHECA_COLUNAS2	#Se nao, printa o chao
+	  	ret
+		CHECA_COLUNAS1:			#Se sim, checa se a coordenada x tambem coincide
+			li t2,48		#Coordenada x da primeira mesa
+			lh t3,0(t0)		#Carrega coordenada x do CHAR_POS
+			lb t6,0(t1)
+			beq t2,t3,ATUALIZA_MESA
+			
+			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)
+			beq t2,t3,ATUALIZA_MESA
+			
+			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)
+			beq t2,t3,ATUALIZA_MESA
+			
+			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)		#Pega quarto byte de MESA
+			beq t2,t3,ATUALIZA_MESA
+			ret
+		CHECA_COLUNAS2:			#Se sim, checa se a coordenada x tambem coincide
+			li t2,48		#Coordenada x da primeira mesa
+			lh t3,0(t0)		#Carrega coordenada x do CHAR_POS
+			addi t1,t1,4
+			lb t6,0(t1)
+			beq t2,t3,ATUALIZA_MESA
+			
+			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)
+			beq t2,t3,ATUALIZA_MESA
+			
+			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)
+			beq t2,t3,ATUALIZA_MESA
+			
+			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)		#Pega quarto byte de MESA
+			beq t2,t3,ATUALIZA_MESA
+			ret
+			ATUALIZA_MESA:		#Se sim, uma mesa sera printada por baixo
+				li t6,0
+				sb t6,0(t1)
+				la s0,mesa
+				lh s1,0(t0)
+				lh s2,2(t0)
+				jal PRINT
+				xori s3,s3,1
+				jal PRINT
+				xori s3,s3,1
+				j GAME_LOOP
+	
 #
 #	s0 = endereço imagem
 #	s1 = x
