@@ -14,7 +14,7 @@
 
 CHAR_POS:	.half 144,200			#Posição do personagem
 OLD_CHAR_POS:	.half 144,200			#Posição antiga do personagem (no ultimo frame)
-MESAS:		.byte 1,1,1,1,1,1,1,1
+MESAS:		.byte 1,1,1,1,1,1,1,1		#Estado das 8 mesas (1 = suja, 0 = limpa)
 
 .text
 SETUP:		
@@ -26,37 +26,69 @@ SETUP:
 		li s3,1				#Frame 1
 		jal PRINT			#Mapa gerado nos 2 frames
 		
-		la s0,mesa			#Printa mesa inicial
+		la s0,vermelho			#Printa mesa 
 		li s1,48			#x=48
 		li s2,104			#y=104
 		li s3,0				
 		jal PRINT			#printa nos 2 frames
 		li s3,1	
 		jal PRINT
-		li a1,3				#inicia variaveis de controle pro LOOP_MESA
-		li a0,0
-LOOP_MESA:					#Printa 2 linhas de 4 mesas cada
-		addi s1,s1,64			#64 pixels para a direita
-		addi a0,a0,1			#Conta mesas printadas
+		
+		la s0,mesacafe			#Printa mesa 
+		li s1,112			#x=112
+		li s2,104			#y=104
 		li s3,0				
-		jal PRINT			
-		li s3,1	
-		jal PRINT
-		blt a0,a1,LOOP_MESA		#Quando printar 3 mesas passa para o ELSE_MESA
-	ELSE_MESA:
-		li a0,0				#Zera variavel de controle de conta mesa
-		addi a2,a2,1			#Conta quantas linahs foram printadas
-		li a3,1
-		addi s2,s2,64			#64 pixels pra baixo (desce para a proxima linha de mesas)
-		li s1,48			#Coordenada x inicial da primeira mesa
-		beq a2,a3,LOOP_MESA		#Volta pro LOOP_MESA se so 1 linha foi printada
-		li s1,48			#Se mais de uma linha foi printada, printa a ultima mesa faltante
-		li s2,168
-		li s3,0				
-		jal PRINT			
+		jal PRINT			#printa nos 2 frames
 		li s3,1	
 		jal PRINT
 		
+		la s0,mesalata			#Printa mesa 
+		li s1,176			#x=176
+		li s2,104			#y=104
+		li s3,0				
+		jal PRINT			#printa nos 2 frames
+		li s3,1	
+		jal PRINT
+		
+		la s0,amarelo			#Printa mesa 
+		li s1,240			#x=240
+		li s2,104			#y=104
+		li s3,0				
+		jal PRINT			#printa nos 2 frames
+		li s3,1	
+		jal PRINT
+		
+		la s0,mesalivroroxo		#Printa mesa 
+		li s1,48			#x=48
+		li s2,168			#y=168
+		li s3,0				
+		jal PRINT			#printa nos 2 frames
+		li s3,1	
+		jal PRINT
+		
+		la s0,pinga			#Printa mesa 
+		li s1,112			#x=112
+		li s2,168			#y=168
+		li s3,0				
+		jal PRINT			#printa nos 2 frames
+		li s3,1	
+		jal PRINT
+		
+		la s0,mesalivroazul		#Printa mesa 
+		li s1,176			#x=176
+		li s2,168			#y=168
+		li s3,0				
+		jal PRINT			#printa nos 2 frames
+		li s3,1	
+		jal PRINT
+		
+		la s0,mesagarrafa		#Printa mesa
+		li s1,240			#x=240
+		li s2,168			#y=168
+		li s3,0				
+		jal PRINT			#printa nos 2 frames
+		li s3,1	
+		jal PRINT	
 
 GAME_LOOP:	jal KEY2			#Função KEY2
 		
