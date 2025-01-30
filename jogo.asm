@@ -80,10 +80,11 @@ GAME_LOOP:	jal KEY2			#Função KEY2
 		la t1,MESAS
 		li t2,104			#Coordenada y da primeira mesa
 		lh t3,2(t0)			#Carrega coordenada y do OLD_CHAR_POS
-		beq t3,t2,CHECA_COLUNAS		#Checa se a coordenada y coincide com uma linha de mesas
+		beq t3,t2,CHECA_COLUNAS1	#Checa se a coordenada y coincide com uma linha de mesas
 		addi t2,t2,64
-	  	bne t3,t2,PRINTA_CHAO		#Se nao, printa o chao
-		CHECA_COLUNAS:			#Se sim, checa se a coordenada x tambem coincide
+	  	beq t3,t2,CHECA_COLUNAS2	#Se nao, printa o chao
+	  	j PRINTA_CHAO
+		CHECA_COLUNAS1:			#Se sim, checa se a coordenada x tambem coincide
 			li t2,48		#Coordenada x da primeira mesa
 			lh t3,0(t0)		#Carrega coordenada x do OLD_CHAR_POS
 			lb t6,0(t1)
@@ -97,11 +98,11 @@ GAME_LOOP:	jal KEY2			#Função KEY2
 			addi t2,t2,64
 			addi t1,t1,1
 			lb t6,0(t1)
-			bne t6,zero,ELSE_GAR
+			bne t6,zero,ELSE_CAFE
 			la s0,mesa
 			beq t2,t3,PRINTA_MESA
-			ELSE_GAR:
-			la s0,mesagarrafa
+			ELSE_CAFE:
+			la s0,mesacafe
 			beq t2,t3,PRINTA_MESA
 			
 			addi t2,t2,64
@@ -122,7 +123,50 @@ GAME_LOOP:	jal KEY2			#Função KEY2
 			beq t2,t3,PRINTA_MESA
 			ELSE_AMA:
 			la s0,amarelo
-			bne t2,t3,PRINTA_CHAO	#Se nao, printa o chao
+			beq t2,t3,PRINTA_MESA	#Se nao, printa o chao
+			j PRINTA_CHAO
+		CHECA_COLUNAS2:			#Se sim, checa se a coordenada x tambem coincide
+			li t2,48		#Coordenada x da primeira mesa
+			lh t3,0(t0)		#Carrega coordenada x do OLD_CHAR_POS
+			addi t1,t1,4
+			lb t6,0(t1)
+			bne t6,zero,ELSE_ROX
+			la s0,mesa
+			beq t2,t3,PRINTA_MESA
+			ELSE_ROX:
+			la s0,mesalivroroxo
+			beq t2,t3,PRINTA_MESA	#Checa se coordenadas coincidem em qualquer mesa
+			
+			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)
+			bne t6,zero,ELSE_PINGA
+			la s0,mesa
+			beq t2,t3,PRINTA_MESA
+			ELSE_PINGA:
+			la s0,pinga
+			beq t2,t3,PRINTA_MESA
+			
+			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)
+			bne t6,zero,ELSE_AZU
+			la s0,mesa
+			beq t2,t3,PRINTA_MESA
+			ELSE_AZU:
+			la s0,mesalivroazul
+			beq t2,t3,PRINTA_MESA
+			
+			addi t2,t2,64
+			addi t1,t1,1
+			lb t6,0(t1)		#Pega quarto byte de MESA
+			bne t6,zero,ELSE_GAR	#Se o quarto byte for igual a 0
+			la s0,mesa
+			beq t2,t3,PRINTA_MESA
+			ELSE_GAR:
+			la s0,mesagarrafa
+			beq t2,t3,PRINTA_MESA	#Se nao, printa o chao
+			j PRINTA_CHAO
 			PRINTA_MESA:		#Se sim, uma mesa sera printada por baixo
 				j PRINTA_TRAS
 				
@@ -228,11 +272,11 @@ CHAR_ESP:
 		la t1,MESAS
 		li t2,104			#Coordenada y da primeira mesa
 		lh t3,2(t0)			#Carrega coordenada y do CHAR_POS
-		beq t3,t2,CHECA_COLUNAS1	#Checa se a coordenada y coincide com uma linha de mesas
+		beq t3,t2,ATUALIZA_COLUNAS1	#Checa se a coordenada y coincide com uma linha de mesas
 		addi t2,t2,64
-	  	beq t3,t2,CHECA_COLUNAS2	#Se nao, printa o chao
+	  	beq t3,t2,ATUALIZA_COLUNAS2	#Se nao, printa o chao
 	  	ret
-		CHECA_COLUNAS1:			#Se sim, checa se a coordenada x tambem coincide
+		ATUALIZA_COLUNAS1:			#Se sim, checa se a coordenada x tambem coincide
 			li t2,48		#Coordenada x da primeira mesa
 			lh t3,0(t0)		#Carrega coordenada x do CHAR_POS
 			lb t6,0(t1)
@@ -253,7 +297,7 @@ CHAR_ESP:
 			lb t6,0(t1)		#Pega quarto byte de MESA
 			beq t2,t3,ATUALIZA_MESA
 			ret
-		CHECA_COLUNAS2:			#Se sim, checa se a coordenada x tambem coincide
+		ATUALIZA_COLUNAS2:			#Se sim, checa se a coordenada x tambem coincide
 			li t2,48		#Coordenada x da primeira mesa
 			lh t3,0(t0)		#Carrega coordenada x do CHAR_POS
 			addi t1,t1,4
